@@ -258,7 +258,7 @@ const make = (dependencies: Dependencies) => {
       .stream(
         LLM.request({
           model: plan.model,
-          promptCacheKey: SessionPromptCacheKey.make(plan.session.id),
+          cache: { mode: "auto", key: SessionPromptCacheKey.make(plan.session.id) },
           http: { headers: SessionModelHeaders.make(plan.session, dependencies.app) },
           messages: [Message.user(plan.prompt)],
           tools: [],

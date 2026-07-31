@@ -20,7 +20,7 @@ const cacheRequest = LLM.request({
   system: LARGE_CACHEABLE_SYSTEM,
   prompt: "Say hi.",
   generation: { maxTokens: 16, temperature: 0 },
-  promptCacheKey: "recorded-cache-test",
+  cache: { mode: "auto", key: "recorded-cache-test" },
 })
 
 const recorded = recordedTests({

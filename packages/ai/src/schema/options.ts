@@ -256,18 +256,17 @@ export class CacheHint extends Schema.Class<CacheHint>("LLM.CacheHint")({
   ttlSeconds: Schema.optional(Schema.Number),
 }) {}
 
-// Auto-placement policy for prompt caching. The protocol-neutral lowering step
-// reads this and injects `CacheHint`s at the configured boundaries; the
-// per-protocol body builders then translate those hints into wire markers as
-// usual. `"auto"` is the recommended default for agent loops — it places
-// breakpoints at the last tool definition, the first and last distinct system
-// parts, and the conversation tail. The rolling message breakpoint keeps a
-// prior cache entry within Anthropic/Bedrock's 20-block lookback during long
-// tool loops.
-//
-// Pass `"none"` to opt out entirely (the legacy behavior). Pass the granular
-// object form to override individual choices.
-export const CachePolicyObject = Schema.Struct({
+const CacheKey = { key: Schema.optional(Schema.String) }
+
+export const CacheAuto = Schema.Struct({
+  mode: Schema.Literal("auto"),
+  ...CacheKey,
+})
+export type CacheAuto = Schema.Schema.Type<typeof CacheAuto>
+
+export const CacheExplicit = Schema.Struct({
+  mode: Schema.Literal("explicit"),
+  ...CacheKey,
   tools: Schema.optional(Schema.Boolean),
   system: Schema.optional(Schema.Boolean),
   messages: Schema.optional(
@@ -279,7 +278,12 @@ export const CachePolicyObject = Schema.Struct({
   ),
   ttlSeconds: Schema.optional(Schema.Number),
 })
-export type CachePolicyObject = Schema.Schema.Type<typeof CachePolicyObject>
+export type CacheExplicit = Schema.Schema.Type<typeof CacheExplicit>
 
-export const CachePolicy = Schema.Union([Schema.Literal("auto"), Schema.Literal("none"), CachePolicyObject])
+// Omitted configuration uses automatic provider behavior and OpenCode's
+// automatic breakpoint placement where required. `"none"` sends no cache key
+// or explicit controls; providers may still cache implicitly.
+export const CachePolicy = Schema.Union([Schema.Literal("none"), CacheAuto, CacheExplicit])
 export type CachePolicy = Schema.Schema.Type<typeof CachePolicy>
+
+export const cacheKey = (cache: CachePolicy | undefined) => (cache && cache !== "none" ? cache.key : undefined)

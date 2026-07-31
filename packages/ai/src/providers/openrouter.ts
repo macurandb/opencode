@@ -4,7 +4,7 @@ import { Endpoint } from "../route/endpoint"
 import { Framing } from "../route/framing"
 import { Protocol } from "../route/protocol"
 import { AuthOptions, type ProviderAuthOption } from "../route/auth-options"
-import { ProviderID, type CacheHint, type ModelID, type ProviderOptions } from "../schema"
+import { cacheKey, ProviderID, type CacheHint, type ModelID, type ProviderOptions } from "../schema"
 import type { ProviderPackage } from "../provider-package"
 import * as OpenAICompatibleProfiles from "./openai-compatible-profile"
 import * as OpenAIChat from "../protocols/openai-chat"
@@ -121,7 +121,7 @@ export const protocol = Protocol.make({
             ...body,
             messages,
             ...bodyOptions(request.providerOptions?.openrouter),
-            ...(request.promptCacheKey ? { prompt_cache_key: request.promptCacheKey } : {}),
+            ...(cacheKey(request.cache) ? { prompt_cache_key: cacheKey(request.cache) } : {}),
           } as OpenRouterBody
         }),
       ),

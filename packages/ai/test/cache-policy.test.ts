@@ -64,7 +64,7 @@ describe("applyCachePolicy", () => {
             Message.assistant("assistant reply"),
             Message.user("latest user message"),
           ],
-          cache: "auto",
+          cache: { mode: "auto" },
         }),
       )
 
@@ -93,7 +93,7 @@ describe("applyCachePolicy", () => {
           model: openaiModel,
           system: "Sys",
           prompt: "hi",
-          cache: "auto",
+          cache: { mode: "auto" },
         }),
       )
 
@@ -112,7 +112,7 @@ describe("applyCachePolicy", () => {
           model: geminiModel,
           system: "Sys",
           prompt: "hi",
-          cache: "auto",
+          cache: { mode: "auto" },
         }),
       )
 
@@ -133,7 +133,7 @@ describe("applyCachePolicy", () => {
           ],
           tools: [{ name: "t1", description: "t1", inputSchema: { type: "object", properties: {} } }],
           messages: [Message.user("first user"), Message.assistant("reply"), Message.user("latest user")],
-          cache: "auto",
+          cache: { mode: "auto" },
         }),
       )
 
@@ -183,7 +183,7 @@ describe("applyCachePolicy", () => {
           system: "Sys",
           tools: [{ name: "t1", description: "t1", inputSchema: { type: "object", properties: {} } }],
           prompt: "hi",
-          cache: { tools: true },
+          cache: { mode: "explicit", tools: true },
         }),
       )
 
@@ -204,7 +204,7 @@ describe("applyCachePolicy", () => {
             { type: "text", text: "last system" },
           ],
           prompt: "hi",
-          cache: "auto",
+          cache: { mode: "auto" },
         }),
       )
 
@@ -233,7 +233,7 @@ describe("applyCachePolicy", () => {
         ],
         tools: [{ name: "t1", description: "t1", inputSchema: { type: "object", properties: {} } }],
         prompt: "hi",
-        cache: "auto",
+          cache: { mode: "auto" },
       })
       const applied = applyCachePolicy(request)
       expect(applied.tools[0]?.cache).toBeDefined()
@@ -267,7 +267,7 @@ describe("applyCachePolicy", () => {
           model: anthropicModel,
           system: "Sys",
           prompt: "hi",
-          cache: { system: true, ttlSeconds: 3600 },
+          cache: { mode: "explicit", system: true, ttlSeconds: 3600 },
         }),
       )
 
@@ -283,7 +283,7 @@ describe("applyCachePolicy", () => {
         LLM.request({
           model: anthropicModel,
           messages: [Message.user("u1"), Message.assistant("a1"), Message.user("u2"), Message.assistant("a2")],
-          cache: { messages: { tail: 2 } },
+          cache: { mode: "explicit", messages: { tail: 2 } },
         }),
       )
 
@@ -301,7 +301,7 @@ describe("applyCachePolicy", () => {
         LLM.request({
           model: anthropicModel,
           messages: [Message.user("u1"), Message.assistant("a1"), Message.user("u2")],
-          cache: { messages: "latest-assistant" },
+          cache: { mode: "explicit", messages: "latest-assistant" },
         }),
       )
 

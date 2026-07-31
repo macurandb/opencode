@@ -10,16 +10,16 @@
 //
 // Manual `cache: CacheHint` placements on individual parts are preserved and
 // count against the four-breakpoint budget; auto only fills remaining slots.
-import { CacheHint, type CachePolicy, type CachePolicyObject } from "./schema/options"
+import { CacheHint, type CacheExplicit, type CachePolicy } from "./schema/options"
 import { LLMRequest, Message, ToolDefinition, type ContentPart } from "./schema/messages"
 
-const AUTO: CachePolicyObject = {
+const AUTO: Omit<CacheExplicit, "mode" | "key"> = {
   tools: true,
   system: true,
   messages: { tail: 1 },
 }
 
-const NONE: CachePolicyObject = {}
+const NONE: Omit<CacheExplicit, "mode" | "key"> = {}
 const BREAKPOINT_CAP = 4
 
 // Resolution rules:
@@ -29,8 +29,8 @@ const BREAKPOINT_CAP = 4
 //   - "auto"      → tools + first/last system + final message boundary.
 //   - "none"      → no auto placement; manual `CacheHint`s still flow.
 //   - object form → exactly what the caller asked for.
-const resolve = (policy: CachePolicy | undefined): CachePolicyObject => {
-  if (policy === undefined || policy === "auto") return AUTO
+const resolve = (policy: CachePolicy | undefined): Omit<CacheExplicit, "mode" | "key"> => {
+  if (policy === undefined || (policy !== "none" && policy.mode === "auto")) return AUTO
   if (policy === "none") return NONE
   return policy
 }
@@ -103,7 +103,7 @@ const markMessageAt = (
 
 const markMessages = (
   messages: ReadonlyArray<Message>,
-  strategy: NonNullable<CachePolicyObject["messages"]>,
+  strategy: NonNullable<CacheExplicit["messages"]>,
   hint: CacheHint,
   budget: Budget,
 ): ReadonlyArray<Message> => {
@@ -133,7 +133,11 @@ const countHints = (request: LLMRequest) =>
 
 export const applyCachePolicy = (request: LLMRequest): LLMRequest => {
   if (!RESPECTS_INLINE_HINTS.has(request.model.route.id)) return request
-  if (request.model.route.id === "openrouter" && (request.cache === undefined || request.cache === "auto")) return request
+  if (
+    request.model.route.id === "openrouter" &&
+    (request.cache === undefined || (request.cache !== "none" && request.cache.mode === "auto"))
+  )
+    return request
   const policy = resolve(request.cache)
   if (!policy.tools && !policy.system && !policy.messages) return request
 

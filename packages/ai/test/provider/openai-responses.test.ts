@@ -680,7 +680,7 @@ describe("OpenAI Responses route", () => {
         LLM.request({
           model: OpenAI.configure({ baseURL: "https://api.openai.test/v1/", apiKey: "test" }).model("gpt-5.2"),
           prompt: "think",
-          promptCacheKey: "session_123",
+          cache: { mode: "auto", key: "session_123" },
           providerOptions: {
             openai: {
               reasoningEffort: "high",
@@ -810,7 +810,7 @@ describe("OpenAI Responses route", () => {
             apiKey: "test",
           }).model("gpt-4.1-mini"),
           prompt: "no cache",
-          promptCacheKey: "request_cache",
+          cache: { mode: "auto", key: "request_cache" },
         }),
       )
 

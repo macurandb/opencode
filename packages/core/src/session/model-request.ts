@@ -213,7 +213,7 @@ export const layer = Layer.effect(
         http: {
           headers: SessionModelHeaders.make(session, app),
         },
-        promptCacheKey: SessionPromptCacheKey.make(session.id),
+        cache: { mode: "auto", key: SessionPromptCacheKey.make(session.id) },
         system: contextEvent.system,
         messages: boundImages(unsupportedParts(contextEvent.messages, resolved.capabilities)),
         tools: hookedTools,

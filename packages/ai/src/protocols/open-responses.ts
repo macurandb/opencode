@@ -3,6 +3,7 @@ import type { Content } from "@opencode-ai/schema/tool"
 import { HttpTransport } from "../route/transport"
 import { Protocol } from "../route/protocol"
 import {
+  cacheKey,
   LLMError,
   LLMEvent,
   Usage,
@@ -542,7 +543,7 @@ const lowerOptions = (request: LLMRequest) => {
   return {
     ...(options.instructions ? { instructions: options.instructions } : {}),
     ...(options.store !== undefined ? { store: options.store } : {}),
-    ...(request.promptCacheKey ? { prompt_cache_key: request.promptCacheKey } : {}),
+    ...(cacheKey(request.cache) ? { prompt_cache_key: cacheKey(request.cache) } : {}),
     ...(options.include ? { include: options.include } : {}),
     ...(options.reasoningEffort || options.reasoningSummary
       ? { reasoning: { effort: options.reasoningEffort, summary: options.reasoningSummary } }

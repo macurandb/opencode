@@ -69,7 +69,7 @@ export const layer = Layer.effect(
           LLM.request({
             model: model.model,
             http: { headers: SessionModelHeaders.make(selection.session, app) },
-            promptCacheKey: SessionPromptCacheKey.make(selection.session.id),
+            cache: { mode: "auto", key: SessionPromptCacheKey.make(selection.session.id) },
             system: contextEvent.system,
             messages: contextEvent.messages,
             tools: hookedTools,

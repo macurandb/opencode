@@ -3210,7 +3210,7 @@ describe("SessionRunnerLLM", () => {
       yield* stream.started
 
       expect(requests).toHaveLength(2)
-      expect(requests.map((request) => request.promptCacheKey)).toEqual([
+      expect(requests.map((request) => (request.cache !== "none" ? request.cache?.key : undefined))).toEqual([
         sessionID,
         otherSessionID,
       ])
@@ -3241,7 +3241,7 @@ describe("SessionRunnerLLM", () => {
       yield* session.resume(longSessionID)
       yield* session.resume(otherLongSessionID)
 
-      const keys = requests.map((request) => request.promptCacheKey)
+      const keys = requests.map((request) => (request.cache !== "none" ? request.cache?.key : undefined))
       expect(keys).toEqual([longSessionID.slice(4), otherLongSessionID.slice(4)])
       expect(keys.every((key) => typeof key === "string" && key.length === 64)).toBe(true)
       expect(keys[0]).not.toBe(keys[1])

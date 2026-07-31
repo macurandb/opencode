@@ -43,7 +43,7 @@ describe("OpenRouter", () => {
           ],
           tools: [{ name: "lookup", description: "Lookup", inputSchema: { type: "object", properties: {} } }],
           prompt: "Hello",
-          cache: { tools: true, system: true, messages: { tail: 1 } },
+          cache: { mode: "explicit", tools: true, system: true, messages: { tail: 1 } },
         }),
       )
 
@@ -123,7 +123,7 @@ describe("OpenRouter", () => {
       const prepared = yield* compileRequest(
         LLM.request({
           model: OpenRouter.configure({ apiKey: "test-key" }).model("anthropic/claude-sonnet-4.6"),
-          cache: { messages: "latest-assistant" },
+          cache: { mode: "explicit", messages: "latest-assistant" },
           messages: [Message.user("Think"), Message.assistant([{ type: "reasoning", text: "Reasoning" }])],
         }),
       )
@@ -173,7 +173,7 @@ describe("OpenRouter", () => {
             },
           }).model("anthropic/claude-3.7-sonnet:thinking"),
           prompt: "Think briefly.",
-          promptCacheKey: "session_123",
+          cache: { mode: "auto", key: "session_123" },
         }),
       )
 
