@@ -108,6 +108,7 @@ function mapOpenRouterOptions(settings: Readonly<Record<string, unknown>>) {
           "extraBody",
           "fetch",
           "headers",
+          "promptCacheKey",
           "timeout",
         ].includes(key),
     ),
@@ -124,7 +125,6 @@ function mapXAIOptions(settings: Readonly<Record<string, unknown>>) {
   const options = {
     ...(typeof settings.reasoningEffort === "string" ? { reasoningEffort: settings.reasoningEffort } : {}),
     ...(typeof settings.store === "boolean" ? { store: settings.store } : {}),
-    ...(typeof settings.promptCacheKey === "string" ? { promptCacheKey: settings.promptCacheKey } : {}),
   }
   if (Object.keys(options).length === 0) return {}
   return { providerOptions: { xai: options } }
