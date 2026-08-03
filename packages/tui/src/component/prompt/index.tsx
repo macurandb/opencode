@@ -379,7 +379,10 @@ export function Prompt(props: PromptProps) {
         run: async (_input: string | undefined, event?: KeyEvent) => {
           event?.preventDefault()
           event?.stopPropagation()
-          const content = await clipboard.read?.()
+          const content = await clipboard.read().catch((error) => {
+            toast.error(error)
+            return undefined
+          })
           if (content?.mime.startsWith("image/")) {
             await pasteAttachment({
               filename: "clipboard",
@@ -1320,10 +1323,7 @@ export function Prompt(props: PromptProps) {
       return `Ask anything... "${list()[store.placeholder % list().length]}"`
     })()
     if (!value) return undefined
-    const width =
-      dimensions().width < 44
-        ? dimensions().width - 5
-        : Math.min(75, dimensions().width - 4) - 5
+    const width = dimensions().width < 44 ? dimensions().width - 5 : Math.min(75, dimensions().width - 4) - 5
     return Locale.takeWidth(value, Math.max(1, width)).trimEnd()
   })
   const locationLabel = createMemo(() => {
@@ -1419,11 +1419,10 @@ export function Prompt(props: PromptProps) {
                 // Windows ConPTY/Terminal often sends CR-only newlines in bracketed paste
                 // Replace CRLF first, then any remaining CR
                 const normalizedText = decodePasteBytes(event.bytes).replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-                const pastedContent = normalizedText.trim()
 
                 // Windows Terminal <1.25 can surface image-only clipboard as an
                 // empty bracketed paste. Windows Terminal 1.25+ does not.
-                if (!pastedContent) {
+                if (event.bytes.byteLength === 0) {
                   keymap.dispatch("prompt.paste")
                   return
                 }

@@ -95,6 +95,7 @@ import { destroyRenderer } from "./util/renderer"
 import { cliErrorMessage, errorFormat } from "./util/error"
 import { AttentionProvider } from "./context/attention"
 import { StorageProvider } from "./context/storage"
+import { createTuiClipboard } from "./clipboard"
 
 registerOpencodeSpinner()
 
@@ -215,9 +216,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
     Effect.catch(() => Effect.tryPromise(() => api.location.get())),
   )
   const directory = location.directory
-  const pluginDirectories = yield* Effect.promise(() =>
-    tuiPluginDirectories(process.cwd(), global.config),
-  )
+  const pluginDirectories = yield* Effect.promise(() => tuiPluginDirectories(process.cwd(), global.config))
   const handoff = input.terminalHandoff ? yield* Effect.promise(input.terminalHandoff) : undefined
   const managed = input.server.service
   const service = managed
@@ -265,6 +264,13 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
           (renderer) => Effect.sync(() => destroyRenderer(renderer)),
         )
       })
+      const clipboard = yield* Effect.acquireRelease(
+        Effect.sync(() => createTuiClipboard(renderer)),
+        (clipboard) =>
+          Effect.tryPromise(() => clipboard.dispose()).pipe(
+            Effect.catch((error) => Effect.sync(() => log("error", "Failed to dispose TUI clipboard", { error }))),
+          ),
+      )
       win32DisableProcessedInput()
       const finalizers = new Set<() => Promise<void>>()
       yield* Effect.addFinalizer(() =>
@@ -301,7 +307,11 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
                 <EpilogueProvider set={(value) => (exit.epilogue = value)}>
                   <TuiAppProvider value={input.app}>
                     <ErrorBoundary
-                      fallback={(error, reset) => <ErrorComponent error={error} reset={reset} mode={mode} />}
+                      fallback={(error, reset) => (
+                        <ClipboardProvider value={clipboard}>
+                          <ErrorComponent error={error} reset={reset} mode={mode} />
+                        </ClipboardProvider>
+                      )}
                     >
                       <TuiPathsProvider
                         value={{
@@ -350,7 +360,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
                                   skipInitialLoading: Boolean(process.env.OPENCODE_FAST_BOOT),
                                 }}
                               >
-                                <ClipboardProvider>
+                                <ClipboardProvider value={clipboard}>
                                   <ArgsProvider {...input.args}>
                                     <ConfigProvider
                                       config={config}
@@ -519,7 +529,7 @@ function App(props: { pair?: DialogPairCredentials }) {
     if (!text || text.length === 0) return
 
     await clipboard
-      .write?.(text)
+      .write(text)
       .then(() => toast.show({ message: "Copied to clipboard", variant: "info" }))
       .catch(toast.error)
 

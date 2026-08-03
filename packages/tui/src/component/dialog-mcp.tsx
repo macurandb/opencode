@@ -146,7 +146,6 @@ function DialogMcpError(props: { server: McpServer; onBack: () => void }) {
   onMount(() => dialog.setSize("large"))
 
   const copy = () => {
-    if (!clipboard.write) return
     void clipboard
       .write(error())
       .then(() => setCopied(true))
