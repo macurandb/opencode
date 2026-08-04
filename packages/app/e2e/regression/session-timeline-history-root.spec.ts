@@ -62,6 +62,7 @@ for (const scenario of scenarios) {
       retry: 20,
     })
     await mockOpenCodeServer(page, {
+      protocol: "v2",
       directory,
       project: project(),
       provider: {
