@@ -18,7 +18,7 @@ import { createTabPromptState } from "@/context/prompt"
 import { base64Encode } from "@opencode-ai/core/util/encode"
 import { showToast } from "@/utils/toast"
 import { canStartTabDrag, isTabCloseTarget } from "./titlebar-tab-gesture"
-import { adjacentTabKey, mergeVisibleTabOrder } from "./titlebar-tab-order"
+import { mergeVisibleTabOrder } from "./titlebar-tab-order"
 import type { Session } from "@opencode-ai/sdk/v2"
 
 function SessionTabSlot(props: {
@@ -220,39 +220,12 @@ export function TitlebarTabStrip(props: {
 }) {
   const global = useGlobal()
   const language = useLanguage()
-  const command = useCommand()
   let scrollRef!: HTMLDivElement
   let listRef!: HTMLDivElement
   let resizeFrame: number | undefined
   const [visibility, setVisibility] = createStore<Record<string, boolean>>({})
   const visibleTabs = createMemo(() => props.tabs.filter((tab) => tab.type === "draft" || visibility[tabKey(tab)]))
   const visibleTabIds = () => visibleTabs().map(tabKey)
-
-  command.register("titlebar-tab-cycle", () => [
-    {
-      id: `tab.prev`,
-      category: "tab",
-      title: "",
-      keybind: `mod+option+ArrowLeft,ctrl+shift+tab`,
-      hidden: true,
-      onSelect: () => selectAdjacentTab(-1),
-    },
-    {
-      id: `tab.next`,
-      category: "tab",
-      title: "",
-      keybind: `mod+option+ArrowRight,ctrl+tab`,
-      hidden: true,
-      onSelect: () => selectAdjacentTab(1),
-    },
-  ])
-
-  function selectAdjacentTab(offset: -1 | 1) {
-    const current = props.currentTab()
-    const key = adjacentTabKey(visibleTabIds(), current ? tabKey(current) : undefined, offset)
-    const next = props.tabs.find((tab) => tabKey(tab) === key)
-    if (next) props.onNavigate(next)
-  }
 
   function refreshOverflow() {
     if (!scrollRef) return
