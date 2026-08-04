@@ -13,6 +13,8 @@ import { useGlobal } from "./global"
 import { ServerScope } from "@/utils/server-scope"
 import { detectServerProtocol, type ServerProtocol } from "@/utils/server-protocol"
 import { createCompatibleApi, type CompatibleApi } from "@/utils/server-compat"
+import { decodeVcsDiff } from "@/utils/vcs-diff-decoder"
+import { decodeSessionList } from "./session-message-decoder"
 
 const isAbortError = (error: unknown) =>
   error !== null && typeof error === "object" && "name" in error && error.name === "AbortError"
@@ -346,7 +348,7 @@ function createServerSdkContextBase(server: ServerConnection.Any, scope: ServerS
       throwOnError: true,
       directory,
     })
-  const api = createCompatibleApi({ protocol, current: currentApi, legacy })
+  const api = createCompatibleApi({ protocol, current: currentApi, legacy, decodeVcsDiff, decodeSessionList })
 
   return {
     server,
@@ -432,6 +434,8 @@ function createDirSdkContext(directory: string, serverSDK: ServerSDKBase) {
       current: serverSDK.currentApi,
       legacy: (next) => serverSDK.createClient({ directory: next ?? directory, throwOnError: true }),
       directory,
+      decodeVcsDiff,
+      decodeSessionList,
     }),
     event: emitter,
     get url() {
