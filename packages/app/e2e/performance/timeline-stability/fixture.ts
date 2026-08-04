@@ -123,6 +123,7 @@ export async function setupTimeline(
     retry: input.eventRetry ?? 20,
   })
   await mockOpenCodeServer(page, {
+    protocol: "v2",
     directory,
     project: project(),
     provider: provider(),
