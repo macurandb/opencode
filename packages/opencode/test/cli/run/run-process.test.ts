@@ -128,18 +128,21 @@ describe("opencode run (non-interactive subprocess)", () => {
             part: expect.objectContaining({ type: "step-start" }),
             providerID: provider,
             modelID: model,
+            agent: "build",
           },
           {
             type: "text",
             part: expect.objectContaining({ type: "text", text: "structured output" }),
             providerID: provider,
             modelID: model,
+            agent: "build",
           },
           {
             type: "step_finish",
             part: expect.objectContaining({ type: "step-finish" }),
             providerID: provider,
             modelID: model,
+            agent: "build",
           },
         ])
         expect(result.stdout.endsWith("\n")).toBe(true)
@@ -178,6 +181,7 @@ describe("opencode run (non-interactive subprocess)", () => {
         for (const event of events) {
           expect(event.providerID).toBe("test")
           expect(event.modelID).toBe("test-model-alt")
+          expect(event.agent).toBe("build")
         }
       }),
     60_000,

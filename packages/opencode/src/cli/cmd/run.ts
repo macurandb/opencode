@@ -696,12 +696,12 @@ export const RunCommand = effectCmd({
         // created, and replies issued from inside the loop must use that client.
         async function loop(client: OpencodeClient, events: Awaited<ReturnType<typeof sdk.event.subscribe>>) {
           const toggles = new Map<string, boolean>()
-          // messageID -> model that produced it, so step events can carry the
-          // attribution that only lives on the assistant message. Only filled from
-          // messages seen on this stream, so a step for a message created before
-          // this subscription (attaching to a turn already in flight) emits
-          // without the fields rather than guessing.
-          const models = new Map<string, { providerID: string; modelID: string }>()
+          // messageID -> what produced it, so the events can carry the attribution
+          // that only lives on the assistant message. Only filled from messages
+          // seen on this stream, so a part whose message was created before this
+          // subscription (attaching to a turn already in flight) emits without the
+          // fields rather than guessing.
+          const models = new Map<string, { providerID: string; modelID: string; agent: string }>()
           let error: string | undefined
 
           for await (const event of events.stream) {
@@ -713,6 +713,7 @@ export const RunCommand = effectCmd({
               models.set(event.properties.info.id, {
                 providerID: event.properties.info.providerID,
                 modelID: event.properties.info.modelID,
+                agent: event.properties.info.agent,
               })
               if (args.format !== "json" && toggles.get("start") !== true) {
                 UI.empty()
